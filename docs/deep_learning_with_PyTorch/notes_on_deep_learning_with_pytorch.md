@@ -22,5 +22,6 @@ Is a starting point for software engineers, data scientists, and motivated stude
 #### The deep learning revolution
 
 With Machine learning, a data scientist is busy defining engineering features and feeding them to a learning algorithm. The results of the task will be as good as the features he engineers. On the right side of the figure, with deep learning, the raw data is fed to an algorithm that extracts hierarchical features automatically, based on optimizing the performance of the algorithm on the task. The results will be as good as the practitioner’s ability to drive the algorithm toward its goal.
-![Comparison between Machine Learning and Deep Learning](/images/comparison_ml_vs_dl.png)
+
+![Comparison between Machine Learning and Deep Learning](./images/comparison_ml_vs_dl.png)
 
