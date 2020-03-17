@@ -276,4 +276,4 @@ Notice that the storage has been reshuffled for elements to be laid out row by r
 
 ### Numeric types
 
-
+I should keep this tomorrow
