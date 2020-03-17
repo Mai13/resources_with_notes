@@ -125,3 +125,155 @@ What do you need: A source of training data, an optimizer to adapt the model to 
 Utilities for data loading and handling can be found in ```torch.util.data```. The two main classes you’ll work with are ```Dataset```, which acts as the bridge between your custom data,  and a standardized PyTorch ```Tensor```. 
 
 PyTorch also provides a deferred execution model named ```TorchScript```. Serialize a set of instruc- tions that can be invoked independently from Python. this execution mode gives PyTorch the opportunity to Just in Time (JIT) transform sequences of known operations into more efficient fused operations.
+
+## It starts with a tensor
+
+Deep learning consists of building a system that can transform data from one representation to another. This transformation is driven by extracting commonalities from a series of examples that demonstrate the desired mapping. The resulting system can consume broad swaths of similar inputs and produce meaningful output for those inputs. 
+
+1. Convert input to floating point numbers.
+
+2. Transformation of the data. Is typically learned by a deep neural network in stages. Such intermediate representations are collections of floating-point numbers that characterize the input and capture the structure in the data. Such characterization is specific to the task at hand and is learned from relevant examples.
+
+![Layers of a NN](./images/nn_representation.png)
+
+How PyTorch handles and stores data: as input, as intermediate representation and as output? With fundamental data structure the **Tensor**. The term tensor comes bundled with the notion of spaces, reference systems, and transformations between them. Is the generalization of vectors and matrices to an arbitrary number of dimensions.
+
+Another name for the same concept is multidimensional arrays. The dimensionality of a tensor coincides with the number of indexes used to refer to scalar values within the tensor
+
+![Layers of a NN](./images/what_is_a_tensor.png)
+
+Compared with NumPy arrays, PyTorch tensors have a few superpowers, such as the ability to perform fast operations on graphical processing units (GPUs), to distrib- ute operations on multiple devices or machines, and to keep track of the graph of computations that created them. 
+
+### Tensor fundamentals
+
+Is a data structure storing collection of numbers that are accessible individually by means of an index and that can be indexed with multiple indices. Python has data structures that cover those needs, but they are ineficient for deep learning. 
+
+	* Numbers in Python are full-fledged objects: Whereas a floating-point number might take only 32 bits to be represented on a computer, Python boxes them in a full- fledged Python object with reference counting and so on.
+	* Lists in Python are meant for sequential collections of objects: No operations are defined for, say, efficiently taking the dot product of two vectors or summing vectors. Also, Python lists have no way of optimizing the layout of their content in memory, as they’re indexable collections of pointers to Python objects. Finally, Python lists are one-dimensional, and although you can create lists of lists, again, this practice is inefficient.
+	* The Python interpreter is slow compared with optimized, compiled code. Performing mathematical operations on large collections of numerical data can be must faster using optimized code written in a compiled, low-level language like C.
+
+
+Python lists or tuples of num- bers are collections of Python objects that are individually allocated in memory. PyTorch tensors or NumPy arrays, on the other hand, are views over (typically) contiguous memory blocks containing unboxed C numeric types, not Python objects.
+
+![Python Memory Storage](./images/python_memory_storage.png)
+
+```python
+import torch
+
+points = torch.tensor([1, 2, 3, 4, 5, 6, 7]) # Create a tensor out of a list
+points = torch.tensor([[1, 2] , [3, 4], [5, 6]]) # Create a tensor out of a list of lists
+points = torch.FloatTensor([[1, 2] , [3, 4], [5, 6]]) # Create a floating points tensor
+
+one_tensor = points[0]
+another_tensor = points[0, 1]
+```
+
+Note that what you get as the output in ```one_tensor``` and in ```another_tensor``` are tensors too. But **NO**new chunk of memory was allocated, values were copied into it, and the new memory was returned wrapped in a new tensor object, What you got back instead was a differ- ent view of the same underlying data, limited to the first row.
+
+### Tensors and storages
+
+Values are allocated in contiguous chunks of memory, managed by torch.Storage instances. A storage is a one-dimensional array of numerical data, such as a contiguous block of memory containing numbers of a given type, perhaps a float or int32. A PyTorch Tensor is a view over such a Storage that’s capable of indexing into that storage by using an offset and per-dimension strides.
+
+Multiple tensors can index the same storage even if they index into the data differently. The underlying memory is allocated only once, however, so creating alternative tensor views on the data can be done quickly, regardless of the size of the data managed by the Storage instance.
+
+![Tensors as views of storage](./images/tensors_as_views_of_storages.png)
+
+```python
+import torch
+
+points = torch.tensor([[1, 2] , [3, 4], [5, 6]]) # Create a tensor out of a list of lists
+print(points.storage()) # 1D array with all the sitorages
+```
+
+The layout of a storage is always one-dimensional, irrespective of the dimensionality of any tensors that may refer to it.
+
+You’ll seldom, if ever, use storage instances directly, but understanding the relation- ship between a tensor and the underlying storage is useful for understanding the cost (or lack thereof) of certain operations later. This mental model is a good one to keep in mind when you want to write effective PyTorch code.
+
+### Size, storage offset, and strides
+
+To index into a storage, tensors rely on a few pieces of information that, together with their storage, unequivocally define them: size, storage offset, and stride. 
+
+1. **size** (like shape() in NumPy): Is a tuple indicating how many elements across each dimension the tensor represents.
+
+2. **storage offset**: Is the index in the storage that corresponds to the first element in the tensor.
+
+3. **stride**: Is the number of elements in the storage that need to be skipped to obtain the next element along each dimension. 
+
+![Elements of a tensors definition](./images/elements_of_tensor_definitions.png)
+
+```python
+import torch
+
+points = torch.tensor([[1, 2] , [3, 4], [5, 6]]) # Create a tensor out of a list of lists
+second_point = points[1]
+
+print(second_point.storage_offset())
+print(second_point.size())
+print(second_point.stride())
+```
+
+This indirection between Tensor and Storage leads some operations, such as transposing a tensor or extracting a subtensor, to be inexpensive, as they don’t lead to memory reallocations; instead, they consist of allocating a new tensor object with a dif- ferent value for size, storage offset, or stride.
+
+**Changing the subtensor has a side effect on the original tensor too** As this may not always be desirable, you can clone the subtensor into a new tensor. 
+
+```python
+import torch
+
+points = torch.tensor([[1, 2] , [3, 4], [5, 6]]) # Create a tensor out of a list of lists
+second_point = points[1].clone()
+
+second_point = 10
+```
+
+If you transpose a tensor you can see that they share storage. No new memory is allocated: transposing is obtained only by creating a new Tensor instance with different stride ordering from the original.
+
+```python
+import torch
+
+points = torch.tensor([[1, 2] , [3, 4], [5, 6]]) # Create a tensor out of a list of lists
+points_t = points.t()
+
+id(points.storage()) == id(points_t.storage())
+```
+
+![Transposing a Tensor](./images/tranposing_a_tensor.png)
+
+Transposing in PyTorch isn’t limited to matrices. You can transpose a multidimen- sional array by specifying the two dimensions along which transposing.
+
+```python
+import torch
+
+points = torch.ones(3, 4, 5) # Create a tensor out of a list of lists
+points_partial_t = points.transpose(0, 2)
+```
+
+A tensor whose values are laid out in the storage starting from the rightmost dimension onward. Is defined as being contiguous. Contiguous tensors are convenient because you can visit them efficiently and in order without jumping around in the storage.
+
+```python
+import torch
+
+points = torch.ones(3, 4, 5) # Create a tensor out of a list of lists
+points_partial_t = points.transpose(0, 2)
+
+print(points.is_contiguous()) # This is True
+print(points_partial_t.is_contiguous()) # This is False
+```
+
+You can obtain a new contiguous tensor from a noncontiguous one by using the con- tiguous method. The content of the tensor stays the same, but the stride changes, as does the storage:
+
+```python
+import torch
+
+points = torch.ones(3, 4, 5) # Create a tensor out of a list of lists
+points_partial_t = points.transpose(0, 2)
+points_t_cont = points_t.contiguous()
+
+print(points.is_contiguous()) # This is True
+print(points_partial_t.is_contiguous()) # This is False
+```
+
+Notice that the storage has been reshuffled for elements to be laid out row by row in the new storage. The stride has been changed to reflect the new layout.
+
+### Numeric types
+
+
