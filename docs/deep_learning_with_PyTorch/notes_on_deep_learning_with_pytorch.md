@@ -199,7 +199,7 @@ To index into a storage, tensors rely on a few pieces of information that, toget
 
 3. **stride**: Is the number of elements in the storage that need to be skipped to obtain the next element along each dimension. 
 
-![Elements of a tensors definition](./images/elements_of_tensor_definitions.png)
+![Elements of a tensors definition](./images/elements_of_tensor_definition.png)
 
 ```python
 import torch
@@ -236,7 +236,7 @@ points_t = points.t()
 id(points.storage()) == id(points_t.storage())
 ```
 
-![Transposing a Tensor](./images/tranposing_a_tensor.png)
+![Transposing a Tensor](./images/transposing_a_tensor.png)
 
 Transposing in PyTorch isn’t limited to matrices. You can transpose a multidimen- sional array by specifying the two dimensions along which transposing.
 
@@ -268,8 +268,8 @@ points = torch.ones(3, 4, 5) # Create a tensor out of a list of lists
 points_partial_t = points.transpose(0, 2)
 points_t_cont = points_t.contiguous()
 
-print(points.is_contiguous()) # This is True
-print(points_partial_t.is_contiguous()) # This is False
+print(points.is_contiguous()) # This is False
+print(points_partial_t.is_contiguous()) # This is True 
 ```
 
 Notice that the storage has been reshuffled for elements to be laid out row by row in the new storage. The stride has been changed to reflect the new layout.
