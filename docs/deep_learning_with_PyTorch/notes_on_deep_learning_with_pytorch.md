@@ -176,7 +176,7 @@ Values are allocated in contiguous chunks of memory, managed by torch.Storage in
 
 Multiple tensors can index the same storage even if they index into the data differently. The underlying memory is allocated only once, however, so creating alternative tensor views on the data can be done quickly, regardless of the size of the data managed by the Storage instance.
 
-![Tensors as views of storage](./images/tensors_as_views_of_storages.png)
+![Tensors as views of storage](./images/tensors_as_views_of_storage.png)
 
 ```python
 import torch
@@ -252,7 +252,7 @@ A tensor whose values are laid out in the storage starting from the rightmost di
 ```python
 import torch
 
-points = torch.ones(3, 4, 5) # Create a tensor out of a list of lists
+points = torch.ones(3, 4, 5)
 points_partial_t = points.transpose(0, 2)
 
 print(points.is_contiguous()) # This is True
@@ -264,7 +264,7 @@ You can obtain a new contiguous tensor from a noncontiguous one by using the con
 ```python
 import torch
 
-points = torch.ones(3, 4, 5) # Create a tensor out of a list of lists
+points = torch.ones(3, 4, 5) 
 points_partial_t = points.transpose(0, 2)
 points_t_cont = points_t.contiguous()
 
@@ -276,4 +276,72 @@ Notice that the storage has been reshuffled for elements to be laid out row by r
 
 ### Numeric types
 
-I should keep this tomorrow
+The data type specifies the possible values that the tensor can hold and the number of bytes per value. This is the list of possible values:
+
+	* 􏰀 torch.float32 or torch.float: 32-bit floating-point
+	*  torch.float64 or torch.double: 64-bit double-precision floating-point
+	*  torch.float16 or torch.half: 16-bit half-precision floating-point
+	*  torch.int8: Signed 8-bit integers
+	*  torch.uint8: Unsigned 8-bit integers
+	*  torch.int16 or torch.short: Signed 16-bit integers
+	*  torch.int32 or torch.int: Signed 32-bit integers
+	*  torch.int64 or torch.long: Signed 64-bit integers
+
+Each of torch.float, torch.double, and so on has a corresponding concrete class of ```torch.FloatTensor``` or  ```torch.DoubleTensor```. The class for torch.int8 is ```torch.CharTensor```, and the class for torch.uint8 is ```torch.ByteTensor```. torch.Tensor is an alias for ```torch.FloatTensor```. The default data type is 32-bit floating-point. This code example shows how to check de data type: 
+
+```python
+import torch
+
+points = torch.ones(3, 4, 5) 
+print(points.dtype) # prints the type of the data stored inside a tensor
+
+# One way to define the types (on the creation of the tesor)
+double_points = torch.ones(10, 2, dtype=torch.double)
+short_points = torch.tensor([[1, 2], [3, 4]], dtype=torch.short)
+
+# Another way to define the types, afer they are created
+
+double_points = torch.zeros(10, 2).double()
+short_points = torch.ones(10, 2).short()
+
+# Is more convinient to use the to method when transforming
+
+double_points = torch.zeros(10, 2).to(torch.double)
+short_points = torch.ones(10, 2).to(dtype=torch.short)
+```
+
+### Indexing Tensors
+
+The indexing method is the same than in NumPy along all the dimensions of the tensor. 
+
+![Indexing 1](./images/indexing_1.png)
+
+![Indexing 2](./images/indexing_2.png)
+
+In addition to using ranges, PyTorch features a powerful form of indexing called *advanced indexing*.
+
+### NumPy interoperability
+
+PyTorch tensors can be converted to NumPy arrays and vice versa efficiently. By doing so, you can leverage the huge swath of functionality in the wider Python ecosystem that has built up around the NumPy array type. 
+When transformin a tensor to an array, the returned array shares an underlying buffer with the tensor storage. As a result, the numpy method can be executed effectively at essentially no cost as long as the data sits in CPU RAM, and modifying the NumPy array leads to a change in the originating tensor.
+
+```python
+import torch
+
+# From tensor to numpy 
+points = torch.ones(3, 4)
+points_np = points.numpy()
+
+# From numpy to tensor
+points = torch.from_numpy(points_np)
+```
+
+### Serializing tensors
+
+
+
+
+
+
+
+
