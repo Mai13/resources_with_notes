@@ -338,10 +338,35 @@ points = torch.from_numpy(points_np)
 
 ### Serializing tensors
 
+If you want to save data in a certain point pytorch uses ```pickle```. 
 
+```python
+torch.save(points, '../data/p1ch3/ourpoints.t')
 
+with open('../data/p1ch3/ourpoints.t','wb') as f:
+	torch.save(points, f)
 
+points = torch.load('../data/p1ch3/ourpoints.t')
+```
 
+For those cases when you need to, however, you can use the HDF5 format and library. HDF5 is a portable, widely supported format for representings erialized multidimensional arrays, organized in a nested key-value dictionary. 
 
+```python
+import h5py
+
+f = h5py.File('../data/p1ch3/ourpoints.hdf5', 'w')
+dset = f.create_dataset('coords', data=points.numpy())
+f.close()
+
+f = h5py.File('../data/p1ch3/ourpoints.hdf5', 'r')
+dset = f['coords']
+last_points = dset[1:]
+```
+You can pass the returned object to the torch.from_numpy function to obtain a tensor directly. Note that in this case, the data is copied over to the tensor’s storage. 
+
+```python
+last_points = torch.from_numpy(dset[1:])
+f.close()
+```
 
 
