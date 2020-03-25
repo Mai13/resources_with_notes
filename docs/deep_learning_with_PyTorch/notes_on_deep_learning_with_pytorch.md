@@ -368,5 +368,61 @@ You can pass the returned object to the torch.from_numpy function to obtain a te
 last_points = torch.from_numpy(dset[1:])
 f.close()
 ```
+### Moving Tensors to GPU
 
+Every Torch tensor can be transferred to a GPUs to perform fast, massively parallel computations. PyTorch tensor has a notion of ```device```, which is where on the computer the tensor data is being placed. 
+
+```python
+points_gpu = torch.tensor([[1.0, 4.0], [2.0, 1.0], [3.0, 4.0]], device='cuda')
+```
+You could instead copy a tensor created on the CPU to the GPU by using the to method:
+
+```python
+points_gpu = points.to(device='cuda')
+points_gpu = points.to(device='cuda:0') # In case your machine has more than one GPU
+
+points = 2 * points # CPU multiplication
+points_gpu = 2 * points.to(device='cuda') # GPU multiplication
+points_cpu = points_gpu.to(device='cpu') # Resuts of multiplication back from GPU to CPU
+```
+
+This is what happens in the code : 
+
+1) The points tensor was copied to the GPU.
+2) A new tensor was allocated on the GPU and used to store the result of the multiplication.
+3) A handle to that GPU tensor was returned.
+4) The tensor is back to CPU
+
+### The tensor API
+
+The oficial documentation link is [API link](http://pytorch.org/docs.) The vast majority of operations on and between tensors are available under the torch module and can also be called as methods of a tensor object. No difference exists between the two forms, which can be used interchangeably.
+
+```python
+# Way 1
+a = torch.ones(3, 2)
+a_t = torch.transpose(a, 0, 1)
+
+# Way 2
+a = torch.ones(3, 2)
+a_t = a.transpose(0, 1)
+```
+In the documentation tensor operations are divided into groups:
+
+1) *Creation ops*: Functions for constructing a tensor, such as ones and from_numpy
+2) *Indexing, slicing, joining, and mutating ops* : Functions for changing the shape stride, or content of a tensor, such as transpose.
+3) *Math ops*: Functions for manipulating the content of the tensor through computations:
+
+	*Pointwise ops*: Functions for obtaining a new tensor by applying a function to
+	each element independently, such as abs and cos
+	*Reduction ops*: Functions for computing aggregate values by iterating through
+	tensors, such as mean, std, and norm
+	*Comparison ops*: Functions for evaluating numerical predicates over tensors, such as equal and max
+	*Spectral ops*: Functions for transforming in and operating in the frequency domain, such as stft and hamming_window
+	*Other ops*: Special functions operating on vectors, such as cross, or matrices, such as trace
+	*BLAS and LAPACK ops*: Functions that follow the BLAS (Basic Linear Alge- bra Subprograms) specification for scalar, vector-vector, matrix-vector, and matrix-matrix operations
+4) *Random sampling ops*: Functions for generating values by drawing randomly from probability distributions, such as randn and normal
+5) *Serialization ops*: Functions for saving and loading tensors, such as load and save
+6) *Parallelism ops*: Functions for controlling the number of threads for parallel CPU execution, such as set_num_threads
+
+## Real-wordl data representation with tensors
 
