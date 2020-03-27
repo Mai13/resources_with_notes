@@ -424,5 +424,18 @@ In the documentation tensor operations are divided into groups:
 5) *Serialization ops*: Functions for saving and loading tensors, such as load and save
 6) *Parallelism ops*: Functions for controlling the number of threads for parallel CPU execution, such as set_num_threads
 
-## Real-wordl data representation with tensors
+## Real-world data representation with tensors
+
+### Tabular data
+
+This data is a table containing one row per sample (or record), in which col- umns contain one piece of information about the sample. 
+
+At first, assume that there’s no meaning in the order in which samples appear in the table. Such a table is a collection of independent samples, unlike a time-series, in which samples are related by a time dimension.
+
+Columns may contain numerical values, but tabular data typically isn’t homogeneous; different columns don’t have the same type.
+
+PyTorch tensors, on the other hand, are homogeneous. Other data science packages, such as Pandas, have the concept of the data frame, an object representing a data set with named, heterogenous columns. 
+
+
+
 

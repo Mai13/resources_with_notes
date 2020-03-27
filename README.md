@@ -18,4 +18,5 @@ Breif Introduction: PyTorch is an open source machine learning library based on 
 [Book Deep Learning with PyTorch](docs/deep_learning_with_PyTorch/book_deep_learning_with_PyTorch.pdf)
 
 [Tutorials](https://pytorch.org/tutorials/)
+
 [Official Documentation](https://pytorch.org/docs/stable/index.html)
