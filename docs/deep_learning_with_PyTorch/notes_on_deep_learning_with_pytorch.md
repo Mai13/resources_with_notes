@@ -434,7 +434,17 @@ At first, assume that there’s no meaning in the order in which samples appear 
 
 Columns may contain numerical values, but tabular data typically isn’t homogeneous; different columns don’t have the same type.
 
-PyTorch tensors, on the other hand, are homogeneous. Other data science packages, such as Pandas, have the concept of the data frame, an object representing a data set with named, heterogenous columns. 
+PyTorch tensors, on the other hand, are homogeneous. Other data science packages, such as Pandas, have the concept of the data frame, an object representing a data set with named, heterogenous columns. PyTorch is encoded as a number. Numeric encoding is deliberate, because neural networks are mathematical entities that take real numbers as inputs and produce real numbers as output through successive application of matrix multiplications and nonlinear functions. So yo need to **encode heterogeneous real-world data in a tensor** 
+
+Continous, ordinal, and categorical values:
+
+	* *continuous values*: These values are the most intuitive when represented as numbers, they’re strictly ordered, and a difference between various values has a strict meaning. If you’re counting or measuring something with units, the value probably is a continuous value.
+
+	* *ordinal values*: The strict ordering of continuous values remains, but the fixed relationship between values no longer applies. (An example is to small, medium or large drink) It’s important to remember that you can’t do math on the values beyond ordering them.
+
+	* *categorical values*: have neither ordering nor numerical meaning. These values are often enumerations of possibilities, assigned arbitrary numbers (An example water to 1, coffee to 2, soda to 3, and milk to 4). Has no real logic; you simply need distinct values to differentiate them. (although assigning values in the range 0..N-1 will have advantages, check one-hot encoding)
+
+
 
 
 
