@@ -444,11 +444,41 @@ Continous, ordinal, and categorical values:
 
 	*categorical values*: have neither ordering nor numerical meaning. These values are often enumerations of possibilities, assigned arbitrary numbers (An example water to 1, coffee to 2, soda to 3, and milk to 4). Has no real logic; you simply need distinct values to differentiate them. (although assigning values in the range 0..N-1 will have advantages, check one-hot encoding)
 
+Here is an example of how to work with a tabular dataset ![The wine dataset](./data/winequality-white.csv), this is the columns it has, all of them numeric:
+
 ```python
 wine_datatset_columns = ['fixed acidity', 'volatile acidity', 'citric acid', 'residual sugar', 'chlorides',
 'free sulfur dioxide', 'total sulfur dioxide', 'density', 'pH', 'sulphates', 'alcohol', 'quality']
-
 ```
+
+You could treat the **quality** as a continuous variable, keep it as a real number, and perform a regression task, or treat it as a label and try to guess such label from the chemi- cal analysis in a classification task. In both methods, you typically remove the score from the tensor of input data and keep it in a separate tensor, so that you can use the score as the ground truth without it being input to your model.
+
+If you want to transform the target tensor in a tensor of labels, you have two options: One option is to treat a label as an integer vector of **quality**. The other approach is to build a *one-hot encoding* of the scores. encode each of the ten scores in a vector of ten elements, with all elements set to zero but one, at a different index for each score.
+
+The two approaches have marked differences. Keeping wine-quality scores in an integer vector of scores induces an ordering of the scores (may be appropriate in this case because a score of 1 is lower than a score of 4). It also induces some distance between scores (The distance between 1 and 3 is the same as the distance between 2 and 4, for example). If, on the other hand, scores are purely qualitative, such as color, one-hot encoding is a much better fit, as no implied ordering or distance is involved. One-hot encoding is appropriate for quantitative scores when fractional values between integer scores make no sense for the application. 
+
+```python
+target_onehot = torch.zeros(target.shape[0], 10)
+target_onehot.scatter_(1, target.unsqueeze(1), 1.0)
+```
+
+*scatter_* notice that its name ends with an underscore. This convention in PyTorch indicates that the method won’t return a new ten- sor but modify the tensor in place. The arguments are:
+
+1) The dimension along which the following two arguments are specified
+2) A column tensor indicating the indices of the elements to scatter
+3) A tensor containing the elements to scatter or a single scalar to scatter 
+
+You can **normalize** the data by subtracting the mean and dividing by the standard deviation, which helps with the learning process. 
+
+### Time Series
+
+
+
+
+
+
+
+
 
 
 
