@@ -428,7 +428,7 @@ In the documentation tensor operations are divided into groups:
 
 ### Tabular data
 
-This data is a table containing one row per sample (or record), in which col- umns contain one piece of information about the sample. 
+This data is a table containing one row per sample (or record), in which columns contain one piece of information about the sample. 
 
 At first, assume that there’s no meaning in the order in which samples appear in the table. Such a table is a collection of independent samples, unlike a time-series, in which samples are related by a time dimension.
 
@@ -470,8 +470,24 @@ target_onehot.scatter_(1, target.unsqueeze(1), 1.0)
 
 You can **normalize** the data by subtracting the mean and dividing by the standard deviation, which helps with the learning process. 
 
+You can take a general idea of the data, by separating by target labels and calculation the mean of each column of the X tensor. 
+
+```python
+bad_data = data[torch.le(target, 3)] # less
+mid_data = data[torch.gt(target, 3) & torch.lt(target, 7)]
+good_data = data[torch.ge(target, 7)] # greater
+
+bad_mean = torch.mean(bad_data, dim=0)
+mid_mean = torch.mean(mid_data, dim=0)
+good_mean = torch.mean(good_data, dim=0)
+
+for i, args in enumerate(zip(col_list, bad_mean, mid_mean, good_mean)):
+print('{:2} {:20} {:6.2f} {:6.2f} {:6.2f}'.format(i, *args))
+```
+
 ### Time Series
 
+Is a tabular data structure in which samples are related by a time dimension. In this case the exmple dataset is ![bike dataset](./data/winequality-white.csv)
 
 
 
