@@ -444,7 +444,7 @@ Continous, ordinal, and categorical values:
 
 	*categorical values*: have neither ordering nor numerical meaning. These values are often enumerations of possibilities, assigned arbitrary numbers (An example water to 1, coffee to 2, soda to 3, and milk to 4). Has no real logic; you simply need distinct values to differentiate them. (although assigning values in the range 0..N-1 will have advantages, check one-hot encoding)
 
-Here is an example of how to work with a tabular dataset ![The wine dataset](./data/winequality-white.csv), this is the columns it has, all of them numeric:
+Here is an example of how to work with a tabular dataset [The wine dataset](./data/winequality-white.csv), this is the columns it has, all of them numeric:
 
 ```python
 wine_datatset_columns = ['fixed acidity', 'volatile acidity', 'citric acid', 'residual sugar', 'chlorides',
@@ -487,7 +487,7 @@ print('{:2} {:20} {:6.2f} {:6.2f} {:6.2f}'.format(i, *args))
 
 ### Time Series
 
-Is a tabular data structure in which samples are related by a time dimension. In this case the exmple dataset is ![bike dataset](./data/winequality-white.csv)
+Is a tabular data structure in which samples are related by a time dimension. In this case the exmple dataset is [bike dataset](./data/winequality-white.csv)
 
 
 
