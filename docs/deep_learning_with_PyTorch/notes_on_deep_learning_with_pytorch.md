@@ -487,18 +487,95 @@ print('{:2} {:20} {:6.2f} {:6.2f} {:6.2f}'.format(i, *args))
 
 ### Time Series
 
-Is a tabular data structure in which samples are related by a time dimension. In this case the exmple dataset is [bike dataset](./data/winequality-white.csv)
+Is a tabular data structure in which samples are related by a time dimension. The existence of an ordering, however, gives you the opportunity to exploit causal relationships across time. In this case the exmple dataset is [bike dataset](./data/hour-fixed.csv), you can see the description below.
 
+```python
+instant # index of record
+day # day of month
+season # season (1: spring, 2: summer, 3: fall, 4: winter)
+yr # year (0: 2011, 1: 2012)
+mnth # month (1 to 12)
+hr # hour(0to23)
+holiday # holiday status
+weekday # day of the week
+workingday # working day status
+weathersit # weather situation (1: clear, 2:mist, 3: light rain/snow, 4: heavy rain/snow)
+temp # temperature in C
+atemp # perceived temperature in C
+hum # humidity
+windspeed # windspeed
+casual # number of causal users
+registered # number of registered users
+cnt # count of rental bikes
+```
 
+This neural network model needs to see sequences of values for each quantity, such as ride count, time of day, temperature, and weather conditions, so N parallel sequences of size C. C stands for channel, in neural network parlance, and is the same as column for 1D data like you have here. The N dimension represents the time axis here, one entry per hour.
 
+You may want to break up the 2-year data set in wider observation periods, such as days. This way, you’ll have N (for number of samples) collections of C sequences of length L. In other words, your time-series data set is a tensor of dimension 3 and shape N x C x L. The C remains your 17 channels, and L would be 24, one per hour of the day.
 
+```python
+bikes_numpy = np.loadtxt('../hour-fixed.csv')
+bikes = torch.from_numpy(bikes_numpy)
 
+bikes.shape # torch.Size([17520, 17])
+bikes.stride() # (17, 1)
 
+daily_bikes = bikes.view(-1, 24, bikes.shape[1])
+daily_bikes.shape # torch.Size([730, 24, 17])
+daily_bikes.stride() # (408, 17, 1)
+```
 
+*view*: changes the way that the tensor looks at the same data as contained in storage. *view* on a tensor returns a new tensor that changes the number of dimen sions and the striding information without changing the storage. Rearrange your tensor at zero cost because no data is copied at all. Your call to view requires you to provide the new shape for the returned tensor. 
 
+We mentioned earlier that the weather-situation variable is ordinal. In fact, it has 4 lev- els: 1 for the best weather and 4 for the worst. You can create one-hot encoded vector and concatenate the columns with the data set. 
 
+```python
+first_day = bikes[:24].long()
+weather_onehot = torch.zeros(first_day.shape[0], 4)
+print(first_day[:,9]) # [1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 2])
+```
 
+Then scatter ones into our matrix according to the corresponding level at each row. Remember the use of unsqueeze to add a singleton dimension earlier.
 
+```python
+weather_onehot.scatter_(dim=1,
+						index=first_day[:,9].unsqueeze(1) - 1, # you are decrasinv values by 1because the weather situation ranges from 1 to 4, whereas indices are 0-based
+						value=1.0)
+```
 
+concatenate your matrix to your original data set, using the cat function.
 
+```python
+torch.cat((bikes[:24], weather_onehot), 1)[:1]
+```
+
+you prescribed your original bikes data set and your one-hot encoded weather- situation matrix to be concatenated along the column dimension (such as 1). You could have done the same thing with the reshaped daily_bikes tensor. Remember that it’s shaped (B, C, L), where L = 24.
+
+```python 
+
+daily_weather_onehot = torch.zeros(daily_bikes.shape[0], 4, daily_bikes.shape[2])
+print(daily_weather_onehot.shape) # torch.Size([730, 4, 24])
+"""
+Then scatter the one-hot encoding into the tensor in the C dimension. Because opera- tion is performed in place, only the content of the tensor changes
+"""
+daily_weather_onehot.scatter_(1, daily_bikes[:,9,:].long().unsqueeze(1) - 1, 1.0)
+print(daily_weather_onehot.shape) # torch.Size([730, 4, 24])
+
+"""Concatenate along the C dimension:"""
+daily_bikes = torch.cat((daily_bikes, daily_weather_onehot), dim=1)
+```
+Some of the possibilities for rescaling variables:
+
+```python
+""" You can map their range to [0.0, 1.0]"""
+temp = daily_bikes[:, 10, :]
+temp_min = torch.min(temp)
+temp_max = torch.max(temp)
+daily_bikes[:, 10, :] = (daily_bikes[:, 10, :] - temp_min) / (temp_max - temp_min)
+""" Standarization: the variable has zero mean and unitary standard deviation. If the variable were drawn from a Gaussian distribution, 68 percent of the samples would sit in the [-1.0, 1.0] interval """
+temp = daily_bikes[:, 10, :]
+daily_bikes[:, 10, :] = (daily_bikes[:, 10, :] - torch.mean(temp)) / torch.std(temp)
+```
+
+### Text
 
